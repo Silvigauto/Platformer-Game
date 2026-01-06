@@ -1,0 +1,54 @@
+import pygame
+from pygame.locals import * 
+from Clases.ClassWorld import World
+from Clases.ClassPlayer import Player
+
+pygame.init()
+
+clock = pygame.time.Clock() #add for animaiton
+fps = 60
+
+screen_width = 1500
+screen_height = 800
+
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption('Platformer')
+
+#load images
+background_image = pygame.image.load("Recursos\\fondo2.jpg")
+background_image = pygame.transform.smoothscale(background_image, (screen_width, screen_height))
+
+###TILES CONF
+tile_size = 100
+
+
+
+#15 x 8
+world_data = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,0,0,1,0,0,0,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,0,1,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,1,3,3,3,3,1,1,1,1,1,1,1],
+
+]
+
+world = World(world_data, tile_size)
+player = Player(100, screen_height - 180)
+
+run = True
+while run:
+    clock.tick(fps)
+    screen.blit(background_image, (0,0))
+
+    world.draw(screen)
+    player.update(screen, world)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+    pygame.display.update()
+
+pygame.quit()
