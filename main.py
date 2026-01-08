@@ -26,18 +26,22 @@ tile_size = 100
 #15 x 8
 world_data = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,4,0,0,0,1],
     [1,1,0,0,1,0,0,0,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,4,0,0,0,0,0,0,1],
     [1,1,1,1,1,1,1,1,1,0,1,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,0,0,0,0,0,0,0,0,4,0,0,1,1,1],
     [1,1,1,1,3,3,3,3,1,1,1,1,1,1,1],
 
 ]
 
-world = World(world_data, tile_size)
+#creating the instances
+
+ghost_group = pygame.sprite.Group()
+world = World(world_data, tile_size, ghost_group,screen)
 player = Player(100, screen_height - 180)
+
 
 run = True
 while run:
@@ -45,7 +49,15 @@ while run:
     screen.blit(background_image, (0,0))
 
     world.draw(screen)
+
+    ghost_group.update()
+    ghost_group.draw(screen)
+    
+    for ghost in ghost_group:
+        pygame.draw.rect(screen, (255,255,255), ghost.rect, 2) #draw it here so it stays showing
+
     player.update(screen, world)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False

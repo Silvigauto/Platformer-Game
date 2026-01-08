@@ -1,7 +1,9 @@
 import pygame
+from Clases.ClassEnemy import Enemy
+
 
 class World():
-    def __init__(self, data, tile_size):
+    def __init__(self, data, tile_size, ghost_group,screen):
         self.tile_list = []
         #load images
         tile_img = pygame.image.load('Recursos\darker_tile.png')
@@ -36,6 +38,9 @@ class World():
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
+                if tile == 4:
+                    ghost = Enemy(col_count * tile_size, row_count * tile_size + 50) #+50 so it can be on top of the tile 
+                    ghost_group.add(ghost)
                 col_count += 1
             row_count += 1
     def draw(self, screen):
