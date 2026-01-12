@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import * 
 from Clases.ClassWorld import World
 from Clases.ClassPlayer import Player
+from Clases.ClassLava import Lava
 
 pygame.init()
 
@@ -18,8 +19,9 @@ pygame.display.set_caption('Platformer')
 background_image = pygame.image.load("Recursos\\fondo2.jpg")
 background_image = pygame.transform.smoothscale(background_image, (screen_width, screen_height))
 
-###TILES CONF
+#define game variables
 tile_size = 100
+game_over = 0 
 
 
 
@@ -39,7 +41,8 @@ world_data = [
 #creating the instances
 
 ghost_group = pygame.sprite.Group()
-world = World(world_data, tile_size, ghost_group,screen)
+lava_group = pygame.sprite.Group()
+world = World(world_data, tile_size, ghost_group,lava_group,screen)
 player = Player(100, screen_height - 180)
 
 
@@ -50,13 +53,17 @@ while run:
 
     world.draw(screen)
 
-    ghost_group.update()
+    if game_over == 0:
+        ghost_group.update()
+        
     ghost_group.draw(screen)
-    
+
+    lava_group.draw(screen)
+
     for ghost in ghost_group:
         pygame.draw.rect(screen, (255,255,255), ghost.rect, 2) #draw it here so it stays showing
 
-    player.update(screen, world)
+    game_over =  player.update(screen, world, ghost_group, lava_group, game_over)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

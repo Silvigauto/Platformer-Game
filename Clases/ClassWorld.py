@@ -1,9 +1,10 @@
 import pygame
 from Clases.ClassEnemy import Enemy
+from Clases.ClassLava import Lava
 
 
 class World():
-    def __init__(self, data, tile_size, ghost_group,screen):
+    def __init__(self, data, tile_size, ghost_group,lava_group,screen):
         self.tile_list = []
         #load images
         tile_img = pygame.image.load('Recursos\darker_tile.png')
@@ -31,13 +32,9 @@ class World():
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
                 if tile == 3:
-                    img = pygame.transform.scale(lava_img, (tile_size,tile_size))
-                    #convertimos en un rectangulo para poder usar sus atributos, coordenadas colisiones
-                    img_rect = img.get_rect()
-                    img_rect.x = col_count * tile_size
-                    img_rect.y = row_count * tile_size
-                    tile = (img, img_rect)
-                    self.tile_list.append(tile)
+                    lava = Lava(col_count * tile_size, row_count * tile_size  + (tile_size // 2), tile_size )
+                    lava_group.add(lava)
+
                 if tile == 4:
                     ghost = Enemy(col_count * tile_size, row_count * tile_size + 50) #+50 so it can be on top of the tile 
                     ghost_group.add(ghost)
