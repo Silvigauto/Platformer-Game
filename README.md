@@ -1,2 +1,2 @@
 # Platformer-Game
-PLatfromer Game 
+Platfromer Game 

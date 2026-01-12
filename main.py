@@ -3,6 +3,7 @@ from pygame.locals import *
 from Clases.ClassWorld import World
 from Clases.ClassPlayer import Player
 from Clases.ClassLava import Lava
+from Clases.ClassButton import Button
 
 pygame.init()
 
@@ -18,6 +19,7 @@ pygame.display.set_caption('Platformer')
 #load images
 background_image = pygame.image.load("Recursos\\fondo2.jpg")
 background_image = pygame.transform.smoothscale(background_image, (screen_width, screen_height))
+restart_img = pygame.image.load('Recursos\\buttons\\restart_btn.png')
 
 #define game variables
 tile_size = 100
@@ -45,6 +47,8 @@ lava_group = pygame.sprite.Group()
 world = World(world_data, tile_size, ghost_group,lava_group,screen)
 player = Player(100, screen_height - 180)
 
+restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
+
 
 run = True
 while run:
@@ -54,16 +58,21 @@ while run:
     world.draw(screen)
 
     if game_over == 0:
-        ghost_group.update()
-        
-    ghost_group.draw(screen)
+        ghost_group.update() #when go is -1 it stops moving
 
+    ghost_group.draw(screen) #but it doesnt stop showing
     lava_group.draw(screen)
 
     for ghost in ghost_group:
         pygame.draw.rect(screen, (255,255,255), ghost.rect, 2) #draw it here so it stays showing
 
     game_over =  player.update(screen, world, ghost_group, lava_group, game_over)
+
+    #if player has died
+    if game_over == -1:
+        if restart_button.draw(screen):
+            player.reset(100, screen_height - 180)
+            game_over = 0
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

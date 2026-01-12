@@ -2,27 +2,7 @@ import pygame
 
 class Player():
     def __init__(self,x,y):
-        self.images_right = []
-        self.images_left = []
-        self.index = 0
-        self.counter = 0
-        for num in range(1,5):
-            img_right = pygame.image.load(f'Recursos\player\guy{num}.png')
-            img_right = pygame.transform.scale(img_right, (40,80))
-            img_left = pygame.transform.flip(img_right, True, False)
-            self.images_left.append(img_left)
-            self.images_right.append(img_right)
-        self.dead_image = pygame.image.load('Recursos\ghost.png')
-        self.image = self.images_right[self.index] #i choose a default img from the list (i'll change later)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y= y
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
-
-        self.vel_y = 0
-        self.jumped = False #to avoid infinite jumping
-        self.direction = 0 #to flip the images if his is facing right or left 
+        self.reset(x,y) 
     
     def update(self,screen, world, ghost_group, lava_group, game_over):
         screen_height = screen.get_height() #get the height of the screen through the parameters
@@ -34,7 +14,7 @@ class Player():
 
             #move the player(calculate the future position and the move it)
             key = pygame.key.get_pressed()
-            if key[pygame.K_SPACE] and self.jumped == False:
+            if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False: #to avoid double jumping
                 self.vel_y =-20
                 self.jumped = True
             if key[pygame.K_SPACE] == False:
@@ -74,12 +54,11 @@ class Player():
             dy += self.vel_y 
 
             #check for collision
+            self.in_air = True
             for tile in world.tile_list:
                 #check for collision in x direction
                 if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
                     dx = 0
-
-
                 #check for collision in y direction (he can still move in x direction)
                 if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
                     #check if below the ground, when he is jumping
@@ -90,6 +69,7 @@ class Player():
                     elif self.vel_y >= 0:
                         dy = tile[1].top - self.rect.bottom
                         self.vel_y = 0
+                        self.in_air = False
 
             #check for collision with enemies
             if pygame.sprite.spritecollide(self, ghost_group, False):
@@ -119,3 +99,28 @@ class Player():
         pygame.draw.rect(screen, (255,255,255), self.rect, 2)
         
         return game_over
+
+    def reset(self,x,y):
+        self.images_right = []
+        self.images_left = []
+        self.index = 0
+        self.counter = 0
+        for num in range(1,5):
+            img_right = pygame.image.load(f'Recursos\player\guy{num}.png')
+            img_right = pygame.transform.scale(img_right, (40,80))
+            img_left = pygame.transform.flip(img_right, True, False)
+            self.images_left.append(img_left)
+            self.images_right.append(img_right)
+        dead_image = pygame.image.load('Recursos\player\guy_dead.png')
+        self.dead_image = pygame.transform.scale(dead_image, (40,80))
+        self.image = self.images_right[self.index] #i choose a default img from the list (i'll change later)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y= y
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+
+        self.vel_y = 0
+        self.jumped = False #to avoid infinite jumping
+        self.direction = 0 #to flip the images if his is facing right or left
+        self.in_air = 0
