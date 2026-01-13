@@ -4,7 +4,7 @@ class Player():
     def __init__(self,x,y):
         self.reset(x,y) 
     
-    def update(self,screen, world, ghost_group, lava_group, game_over):
+    def update(self,screen, world, ghost_group, lava_group,exit_group, game_over):
         screen_height = screen.get_height() #get the height of the screen through the parameters
         dx = 0
         dy = 0
@@ -15,7 +15,7 @@ class Player():
             #move the player(calculate the future position and the move it)
             key = pygame.key.get_pressed()
             if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False: #to avoid double jumping
-                self.vel_y =-20
+                self.vel_y =-25
                 self.jumped = True
             if key[pygame.K_SPACE] == False:
                 self.jumped = False
@@ -78,7 +78,13 @@ class Player():
             #check for collision with lava
             if pygame.sprite.spritecollide(self, lava_group, False):
                 game_over = -1
-                print(game_over)
+                
+            
+            #check for collision with exit
+            if pygame.sprite.spritecollide(self, exit_group, False):
+                game_over = 1
+                
+
 
 
             #update player coordinates
@@ -91,7 +97,7 @@ class Player():
 
         elif game_over == -1:   
             self.image = self.dead_image
-            if self.rect.y > 200:
+            if self.rect.y > -80:
                 self.rect.y -= 5
         
         #draw player onto screen

@@ -4,6 +4,8 @@ from Clases.ClassWorld import World
 from Clases.ClassPlayer import Player
 from Clases.ClassLava import Lava
 from Clases.ClassButton import Button
+import json #para el manejo de los niveles
+from os import path #to handle non existing game levels
 
 pygame.init()
 
@@ -28,32 +30,51 @@ exit_img = pygame.image.load('Recursos\\buttons\\exit_btn.png')
 tile_size = 100
 game_over = 0 
 main_menu = True
+level = 1
+max_levels = 3
+
 
 
 
 #15 x 8
-world_data = [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,4,0,0,0,1],
-    [1,1,0,0,1,0,0,0,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,4,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,0,1,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
-    [1,0,0,0,0,0,0,0,0,4,0,0,1,1,1],
-    [1,1,1,1,3,3,3,3,1,1,1,1,1,1,1],
+# world_data = [
+#     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+#     [1,0,0,0,0,0,0,0,0,0,4,0,0,0,1],
+#     [1,1,0,0,1,0,0,0,1,1,1,1,1,1,1],
+#     [1,0,0,0,0,0,0,4,0,0,0,0,0,0,1],
+#     [1,1,1,1,1,1,1,1,1,0,1,0,0,0,1],
+#     [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
+#     [1,0,0,0,0,0,0,0,0,4,0,0,1,1,1],
+#     [1,1,1,1,3,3,3,3,1,1,1,1,1,1,1],
 
-]
+# ]
+
+#replace the string with the current level variable
+if path.exists(f'Levels\level{level}.json'):
+    with open(f'Levels\level{level}.json', 'r') as file:
+        world_data = json.load(file)
 
 #creating the instances
-
 ghost_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
-world = World(world_data, tile_size, ghost_group,lava_group,screen)
+exit_group = pygame.sprite.Group()
+world = World(world_data, tile_size, ghost_group,lava_group,exit_group,screen)
 player = Player(100, screen_height - 180)
 
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
 start_button = Button(screen_width // 2 - 350, screen_height // 2, start_img)
 exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_img)
+
+def reset_level(level):
+    player.reset(100, screen_height - 180) #reset the player
+    ghost_group.empty()
+    lava_group.empty()
+    exit_group.empty()
+    if path.exists(f'Levels\level{level}.json'):
+        with open(f'Levels\level{level}.json', 'r') as file:
+            world_data = json.load(file)
+    world = World(world_data, tile_size, ghost_group,lava_group,exit_group,screen)
+    return world
 
 
 run = True
@@ -75,17 +96,40 @@ while run:
 
         ghost_group.draw(screen) #but it doesnt stop showing
         lava_group.draw(screen)
+        exit_group.draw(screen)
 
         for ghost in ghost_group:
             pygame.draw.rect(screen, (255,255,255), ghost.rect, 2) #draw it here so it stays showing
 
-        game_over =  player.update(screen, world, ghost_group, lava_group, game_over)
+        game_over =  player.update(screen, world, ghost_group, lava_group,exit_group, game_over)
 
         #if player has died
         if game_over == -1:
             if restart_button.draw(screen):
-                player.reset(100, screen_height - 180)
+                #player.reset(100, screen_height - 180)
+                world_data = [] #vacio la lista
+                world = reset_level(level) #creo el nuevo nivel
                 game_over = 0
+        
+        #if player has completed the level
+        if game_over == 1:
+            #reset game and go to next level
+            level += 1
+            if level <= max_levels:
+                #reset level
+                world_data = [] #vacio la lista
+                world = reset_level(level) #creo el nuevo nivel
+                game_over = 0
+            else:
+                #reset game
+                if restart_button.draw():
+                    level = 1
+                    #reset level
+                    world_data = [] #vacio la lista
+                    world = reset_level(level) #creo el nuevo nivel
+                    game_over = 0
+
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

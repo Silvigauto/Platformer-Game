@@ -1,10 +1,12 @@
 import pygame
 from Clases.ClassEnemy import Enemy
 from Clases.ClassLava import Lava
+from Clases.ClassExit import Exit
+
 
 
 class World():
-    def __init__(self, data, tile_size, ghost_group,lava_group,screen):
+    def __init__(self, data, tile_size, ghost_group,lava_group,exit_group, screen):
         self.tile_list = []
         #load images
         tile_img = pygame.image.load('Recursos\darker_tile.png')
@@ -38,6 +40,9 @@ class World():
                 if tile == 4:
                     ghost = Enemy(col_count * tile_size, row_count * tile_size + 50) #+50 so it can be on top of the tile 
                     ghost_group.add(ghost)
+                if tile == 5:
+                    exit = Exit(col_count * tile_size,  row_count * tile_size, tile_size)
+                    exit_group.add(exit)
                 col_count += 1
             row_count += 1
     def draw(self, screen):
