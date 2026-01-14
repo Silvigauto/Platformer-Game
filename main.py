@@ -3,6 +3,7 @@ from pygame.locals import *
 from Clases.ClassWorld import World
 from Clases.ClassPlayer import Player
 from Clases.ClassLava import Lava
+#from Clases.ClassCoin import Coin
 from Clases.ClassButton import Button
 import json #para el manejo de los niveles
 from os import path #to handle non existing game levels
@@ -32,6 +33,7 @@ game_over = 0
 main_menu = True
 level = 1
 max_levels = 3
+score = 0
 
 
 
@@ -55,10 +57,12 @@ if path.exists(f'Levels\level{level}.json'):
         world_data = json.load(file)
 
 #creating the instances
-ghost_group = pygame.sprite.Group()
+ghost_group = pygame.sprite.Group() # TODO sumar los groups a una lista y luego cambiar los parametros
 lava_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
-world = World(world_data, tile_size, ghost_group,lava_group,exit_group,screen)
+coin_group = pygame.sprite.Group()
+
+world = World(world_data, tile_size, ghost_group,lava_group,exit_group,coin_group,screen)
 player = Player(100, screen_height - 180)
 
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
@@ -73,7 +77,7 @@ def reset_level(level):
     if path.exists(f'Levels\level{level}.json'):
         with open(f'Levels\level{level}.json', 'r') as file:
             world_data = json.load(file)
-    world = World(world_data, tile_size, ghost_group,lava_group,exit_group,screen)
+    world = World(world_data, tile_size, ghost_group,lava_group,exit_group,coin_group,screen)
     return world
 
 
@@ -96,6 +100,7 @@ while run:
 
         ghost_group.draw(screen) #but it doesnt stop showing
         lava_group.draw(screen)
+        coin_group.draw(screen)
         exit_group.draw(screen)
 
         for ghost in ghost_group:
