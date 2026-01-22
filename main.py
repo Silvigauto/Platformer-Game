@@ -28,7 +28,7 @@ exit_img = pygame.image.load('Recursos\\buttons\\exit_btn.png')
 
 
 #define game variables
-tile_size = 100
+tile_size = 50
 game_over = 0 
 main_menu = True
 level = 1

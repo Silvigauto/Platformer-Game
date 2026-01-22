@@ -18,7 +18,7 @@ class World():
         for row in data:
             col_count = 0
             for tile in row:
-                if tile == 1:
+                if tile == 1: #piedra violeta
                     img = pygame.transform.scale(tile_img, (tile_size,tile_size))
                     #convertimos en un rectangulo para poder usar sus atributos, coordenadas colisiones
                     img_rect = img.get_rect()
@@ -26,7 +26,7 @@ class World():
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
-                if tile == 2:
+                if tile == 2: #piedra gris
                     img = pygame.transform.scale(stone_img, (tile_size,tile_size))
                     #convertimos en un rectangulo para poder usar sus atributos, coordenadas colisiones
                     img_rect = img.get_rect()
@@ -34,17 +34,17 @@ class World():
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
-                if tile == 3:
+                if tile == 3: #lava
                     lava = Lava(col_count * tile_size, row_count * tile_size  + (tile_size // 2), tile_size )
                     lava_group.add(lava)
 
-                if tile == 4:
+                if tile == 4: #enemigo
                     ghost = Enemy(col_count * tile_size, row_count * tile_size + 50) #+50 so it can be on top of the tile 
                     ghost_group.add(ghost)
-                if tile == 5:
+                if tile == 5: #salida
                     exit = Exit(col_count * tile_size,  row_count * tile_size, tile_size)
                     exit_group.add(exit)
-                if tile == 6:
+                if tile == 6: #moneda
                     coin = Coin(col_count * tile_size + (tile_size //2 ), row_count * tile_size  + (tile_size // 2), tile_size )
                     coin_group.add(coin)
                 col_count += 1
