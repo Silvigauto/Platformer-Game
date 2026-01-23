@@ -66,14 +66,14 @@ bullet_group = pygame.sprite.Group()
 
 #creating the instances
 world = World(world_data, tile_size, ghost_group,lava_group,exit_group,coin_group,screen)
-player = Player(100, screen_height - 180)
+player = Player(100, screen_height - 400)
 
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
 start_button = Button(screen_width // 2 - 350, screen_height // 2, start_img)
 exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_img)
 
 def reset_level(level):
-    player.reset(100, screen_height - 180) #reset the player
+    player.reset(100, screen_height - 400) #reset the player
     ghost_group.empty()
     lava_group.empty()
     exit_group.empty()

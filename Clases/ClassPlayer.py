@@ -4,45 +4,59 @@ from Clases.ClassBullet import Bullet
 class Player():
     def __init__(self,x,y):
         self.reset(x,y) 
-    
-    def update(self,screen, world, ghost_group, lava_group,exit_group,bullet_group, game_over):  #TODO refactorize the update method
-        screen_height = screen.get_height() #get the height of the screen through the parameters
-        dx = 0
-        dy = 0
-        walk_cooldown = 10 #for the animation to go slower
+
+    def update(self,screen, world, ghost_group, lava_group,exit_group,bullet_group, game_over):
         current_time = pygame.time.get_ticks()
 
         if game_over == 0:
-            #move the player(calculate the future position and the move it)
-            key = pygame.key.get_pressed()
-            if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False: #to avoid double jumping
-                self.vel_y =-25
-                self.jumped = True
-            if key[pygame.K_SPACE] == False:
-                self.jumped = False
-            if key [pygame.K_LEFT]:
-                dx -= 5
-                self.counter += 1
-                self.direction = -1
-            if key[pygame.K_RIGHT]:
-                dx += 5
-                self.counter += 1
-                self.direction = 1
-            if  key [pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False:
-                self.counter = 0
-                self.index = 0
-                if self.direction == 1:
-                    self.image = self.images_right[self.index]
-                if self.direction == -1:
-                    self.image = self.images_left[self.index]
-            if key[pygame.K_f]:
-                if current_time - self.last_shot_time >= self.shoot_cooldown:
-                    self.shoot(bullet_group)
-                    self.last_shot_time = current_time
+            self.move_player(current_time, bullet_group)
+            self.animate()
+            self.apply_gravity()
+            self.check_collisions(world)
+            game_over = self.check_collisions_with_groups(ghost_group, lava_group, exit_group, game_over)
+            self.update_position()
+
+        elif game_over == -1:
+            self.die()
+
+        self.draw(screen)
+        return game_over
 
 
-            #animations
-            if self.counter > walk_cooldown: #to control the speed of the animation
+    def move_player(self, current_time, bullet_group):
+        #move the player(calculate the future position and the move it)
+        dx = 0   
+        key = pygame.key.get_pressed()
+        if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False: #to avoid double jumping
+            self.vel_y =-20
+            self.jumped = True
+        if key[pygame.K_SPACE] == False:
+            self.jumped = False
+        if key [pygame.K_LEFT]:
+            dx -= 5
+            self.counter += 1
+            self.direction = -1
+        if key[pygame.K_RIGHT]:
+            dx += 5
+            self.counter += 1
+            self.direction = 1
+        if  key [pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False:
+            self.counter = 0
+            self.index = 0
+            if self.direction == 1:
+                self.image = self.images_right[self.index]
+            if self.direction == -1:
+                self.image = self.images_left[self.index]
+        if key[pygame.K_f]:
+            if current_time - self.last_shot_time >= self.shoot_cooldown:
+                self.shoot(bullet_group)
+                self.last_shot_time = current_time
+
+        self.dx = dx
+    
+    def animate(self):
+        walk_cooldown = 10 #for the animation to go slower
+        if self.counter > walk_cooldown: #to control the speed of the animation
                 self.counter = 0
                 self.index += 1
                 if self.index >= len(self.images_right):
@@ -51,61 +65,67 @@ class Player():
                     self.image = self.images_right[self.index]
                 if self.direction == -1:
                     self.image = self.images_left[self.index]
-                
+    
+    def apply_gravity(self):
+        self.dy = 0
+        #add gravity
+        self.vel_y += 1
+        if self.vel_y > 10:
+            self.vel_y = 10
+        self.dy += self.vel_y 
+    
+    def check_collisions(self, world):
+        #check for collision
+        self.in_air = True
+        for tile in world.tile_list:
+            #check for collision in x direction
+            if tile[1].colliderect(self.rect.x + self.dx, self.rect.y, self.width, self.height):
+                self.dx = 0
+            #check for collision in y direction (he can still move in x direction)
+            if tile[1].colliderect(self.rect.x, self.rect.y + self.dy, self.width, self.height):
+                #check if below the ground, when he is jumping
+                if self.vel_y < 0:
+                    self.dy = tile[1].bottom - self.rect.top
+                    self.vel_y = 0
+                #check if above the ground, when he is falling
+                elif self.vel_y >= 0:
+                    self.dy = tile[1].top - self.rect.bottom
+                    self.vel_y = 0
+                    self.in_air = False
 
-            #add gravity
-            self.vel_y += 1
-            if self.vel_y > 10:
-                self.vel_y = 10
-            dy += self.vel_y 
 
-            #check for collision
-            self.in_air = True
-            for tile in world.tile_list:
-                #check for collision in x direction
-                if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
-                    dx = 0
-                #check for collision in y direction (he can still move in x direction)
-                if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
-                    #check if below the ground, when he is jumping
-                    if self.vel_y < 0:
-                        dy = tile[1].bottom - self.rect.top
-                        self.vel_y = 0
-                    #check if above the ground, when he is falling
-                    elif self.vel_y >= 0:
-                        dy = tile[1].top - self.rect.bottom
-                        self.vel_y = 0
-                        self.in_air = False
-
-            #check for collision with enemies
-            if pygame.sprite.spritecollide(self, ghost_group, False):
-                game_over = -1
-            
-            #check for collision with lava
-            if pygame.sprite.spritecollide(self, lava_group, False):
-                game_over = -1
-                
-            
-            #check for collision with exit
-            if pygame.sprite.spritecollide(self, exit_group, False):
-                game_over = 1
-            
-            
-                
-            #update player coordinates
-            self.rect.x += dx
-            self.rect.y += dy
-
-        elif game_over == -1:   
-            self.image = self.dead_image
-            if self.rect.y > -80:
-                self.rect.y -= 5
+    def check_collisions_with_groups(self, ghost_group,lava_group, exit_group, game_over):
+        #check for collision with enemies
+        if pygame.sprite.spritecollide(self, ghost_group, False):
+            game_over = -1
+        #check for collision with lava
+        if pygame.sprite.spritecollide(self, lava_group, False):
+            game_over = -1
         
+        #check for collision with exit
+        if pygame.sprite.spritecollide(self, exit_group, False):
+            game_over = 1
+        
+        return game_over
+
+    def shoot(self, bullet_group):
+        direction =  self.direction if self.direction != 0 else 1
+        bullet = Bullet(self.rect.centerx, self.rect.centery,direction)
+        bullet_group.add(bullet)
+
+    def update_position(self): 
+        self.rect.x += self.dx
+        self.rect.y += self.dy
+
+    def die(self):
+        self.image = self.dead_image
+        if self.rect.y > -80:
+            self.rect.y -= 5
+    
+    def draw(self, screen): 
         #draw player onto screen
         screen.blit(self.image, self.rect)
         pygame.draw.rect(screen, (255,255,255), self.rect, 2)
-        
-        return game_over
 
     def reset(self,x,y):
         self.images_right = []
@@ -127,15 +147,16 @@ class Player():
         self.width = self.image.get_width()
         self.height = self.image.get_height()
 
+        #jumping attributes
         self.vel_y = 0
         self.jumped = False #to avoid infinite jumping
-        self.direction = 0 #to flip the images if his is facing right or left
         self.in_air = 0
+        self.direction = 0 #to flip the images if his is facing right or left
 
+        #shooting atributes
         self.shoot_cooldown = 300 #miliseconds 
         self.last_shot_time = 0
+
+        self.lives = 3 
     
-    def shoot(self, bullet_group):
-        direction =  self.direction if self.direction != 0 else 1
-        bullet = Bullet(self.rect.centerx, self.rect.centery,direction)
-        bullet_group.add(bullet)
+    
