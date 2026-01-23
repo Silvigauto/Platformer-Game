@@ -97,7 +97,7 @@ class Player():
     def check_collisions_with_groups(self, ghost_group,lava_group, exit_group, game_over):
         #check for collision with enemies
         if pygame.sprite.spritecollide(self, ghost_group, False):
-            game_over = -1
+            self.lives -= 1
         #check for collision with lava
         if pygame.sprite.spritecollide(self, lava_group, False):
             game_over = -1

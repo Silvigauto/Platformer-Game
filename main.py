@@ -3,6 +3,7 @@ from pygame.locals import *
 from Clases.ClassWorld import World
 from Clases.ClassPlayer import Player
 from Clases.ClassLava import Lava
+from Clases.ClassHUD import HUD
 #from Clases.ClassCoin import Coin
 from Clases.ClassButton import Button
 import json #para el manejo de los niveles
@@ -10,7 +11,7 @@ from os import path #to handle non existing game levels
 
 pygame.init()
 
-clock = pygame.time.Clock() #add for animaiton
+clock = pygame.time.Clock() #add for animation
 fps = 60
 
 screen_width = 1500
@@ -36,21 +37,6 @@ max_levels = 3
 score = 0
 
 
-
-
-#15 x 8
-# world_data = [
-#     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-#     [1,0,0,0,0,0,0,0,0,0,4,0,0,0,1],
-#     [1,1,0,0,1,0,0,0,1,1,1,1,1,1,1],
-#     [1,0,0,0,0,0,0,4,0,0,0,0,0,0,1],
-#     [1,1,1,1,1,1,1,1,1,0,1,0,0,0,1],
-#     [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
-#     [1,0,0,0,0,0,0,0,0,4,0,0,1,1,1],
-#     [1,1,1,1,3,3,3,3,1,1,1,1,1,1,1],
-
-# ]
-
 #replace the string with the current level variable
 if path.exists(f'Levels\level{level}.json'):
     with open(f'Levels\level{level}.json', 'r') as file:
@@ -67,7 +53,6 @@ bullet_group = pygame.sprite.Group()
 #creating the instances
 world = World(world_data, tile_size, ghost_group,lava_group,exit_group,coin_group,screen)
 player = Player(100, screen_height - 400)
-
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
 start_button = Button(screen_width // 2 - 350, screen_height // 2, start_img)
 exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_img)
@@ -88,6 +73,7 @@ run = True
 while run:
     clock.tick(fps)
     screen.blit(background_image, (0,0))
+    hud = HUD(screen)
 
     #events
     for event in pygame.event.get():
@@ -102,19 +88,17 @@ while run:
 
     else:
         # update(solo logica)
-
         if game_over == 0:
             ghost_group.update()
             bullet_group.update()
             game_over =  player.update(screen, world, ghost_group, lava_group,exit_group,bullet_group, game_over)
 
         #colisions (always)
-
         bullet_hits = pygame.sprite.groupcollide(ghost_group,bullet_group,True,True)
 
         #draws
         world.draw(screen)
-
+        hud.draw(player)
         ghost_group.draw(screen)
         lava_group.draw(screen)
         coin_group.draw(screen)
