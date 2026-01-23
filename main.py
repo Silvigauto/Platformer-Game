@@ -56,12 +56,15 @@ if path.exists(f'Levels\level{level}.json'):
     with open(f'Levels\level{level}.json', 'r') as file:
         world_data = json.load(file)
 
-#creating the instances
+#GROUPS
 ghost_group = pygame.sprite.Group() # TODO sumar los groups a una lista y luego cambiar los parametros
 lava_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 coin_group = pygame.sprite.Group()
+bullet_group = pygame.sprite.Group()
 
+
+#creating the instances
 world = World(world_data, tile_size, ghost_group,lava_group,exit_group,coin_group,screen)
 player = Player(100, screen_height - 180)
 
@@ -86,59 +89,62 @@ while run:
     clock.tick(fps)
     screen.blit(background_image, (0,0))
 
+    #events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
     if main_menu:
         if exit_button.draw(screen):
             run = False
         if start_button.draw(screen):
             main_menu = False
+
     else:
-        #game logic
-        world.draw(screen)
+        # update(solo logica)
 
         if game_over == 0:
-            ghost_group.update() #when go is -1 it stops moving
+            ghost_group.update()
+            bullet_group.update()
+            game_over =  player.update(screen, world, ghost_group, lava_group,exit_group,bullet_group, game_over)
 
-        ghost_group.draw(screen) #but it doesnt stop showing
+        #colisions (always)
+
+        bullet_hits = pygame.sprite.groupcollide(ghost_group,bullet_group,True,True)
+
+        #draws
+        world.draw(screen)
+
+        ghost_group.draw(screen)
         lava_group.draw(screen)
         coin_group.draw(screen)
         exit_group.draw(screen)
+        bullet_group.draw(screen)
 
         for ghost in ghost_group:
-            pygame.draw.rect(screen, (255,255,255), ghost.rect, 2) #draw it here so it stays showing
+            pygame.draw.rect(screen, (255,255,255), ghost.rect, 2)
 
-        game_over =  player.update(screen, world, ghost_group, lava_group,exit_group, game_over)
-
-        #if player has died
+        # game_over: WIN
         if game_over == -1:
             if restart_button.draw(screen):
-                #player.reset(100, screen_height - 180)
-                world_data = [] #vacio la lista
-                world = reset_level(level) #creo el nuevo nivel
+                world_data = []
+                world = reset_level(level)
                 game_over = 0
-        
-        #if player has completed the level
-        if game_over == 1:
-            #reset game and go to next level
+
+        elif game_over == 1:
             level += 1
             if level <= max_levels:
-                #reset level
-                world_data = [] #vacio la lista
-                world = reset_level(level) #creo el nuevo nivel
+                world_data = []
+                world = reset_level(level)
                 game_over = 0
             else:
-                #reset game
-                if restart_button.draw():
+                if restart_button.draw(screen):
                     level = 1
-                    #reset level
-                    world_data = [] #vacio la lista
-                    world = reset_level(level) #creo el nuevo nivel
+                    world_data = []
+                    world = reset_level(level)
                     game_over = 0
 
-
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
     pygame.display.update()
+
 
 pygame.quit()

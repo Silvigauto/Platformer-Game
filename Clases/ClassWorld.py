@@ -49,6 +49,8 @@ class World():
                     coin_group.add(coin)
                 col_count += 1
             row_count += 1
+
+            
     def draw(self, screen):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])

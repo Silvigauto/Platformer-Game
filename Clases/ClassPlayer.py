@@ -1,17 +1,18 @@
 import pygame
+from Clases.ClassBullet import Bullet
 
 class Player():
     def __init__(self,x,y):
         self.reset(x,y) 
     
-    def update(self,screen, world, ghost_group, lava_group,exit_group, game_over):
+    def update(self,screen, world, ghost_group, lava_group,exit_group,bullet_group, game_over):  #TODO refactorize the update method
         screen_height = screen.get_height() #get the height of the screen through the parameters
         dx = 0
         dy = 0
         walk_cooldown = 10 #for the animation to go slower
+        current_time = pygame.time.get_ticks()
 
         if game_over == 0:
-
             #move the player(calculate the future position and the move it)
             key = pygame.key.get_pressed()
             if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False: #to avoid double jumping
@@ -34,6 +35,11 @@ class Player():
                     self.image = self.images_right[self.index]
                 if self.direction == -1:
                     self.image = self.images_left[self.index]
+            if key[pygame.K_f]:
+                if current_time - self.last_shot_time >= self.shoot_cooldown:
+                    self.shoot(bullet_group)
+                    self.last_shot_time = current_time
+
 
             #animations
             if self.counter > walk_cooldown: #to control the speed of the animation
@@ -83,17 +89,12 @@ class Player():
             #check for collision with exit
             if pygame.sprite.spritecollide(self, exit_group, False):
                 game_over = 1
+            
+            
                 
-
-
-
             #update player coordinates
             self.rect.x += dx
             self.rect.y += dy
-
-            # if self.rect.bottom > screen_height:
-            #     self.rect.bottom = screen_height 
-            #     dy = 0
 
         elif game_over == -1:   
             self.image = self.dead_image
@@ -130,3 +131,11 @@ class Player():
         self.jumped = False #to avoid infinite jumping
         self.direction = 0 #to flip the images if his is facing right or left
         self.in_air = 0
+
+        self.shoot_cooldown = 300 #miliseconds 
+        self.last_shot_time = 0
+    
+    def shoot(self, bullet_group):
+        direction =  self.direction if self.direction != 0 else 1
+        bullet = Bullet(self.rect.centerx, self.rect.centery,direction)
+        bullet_group.add(bullet)
