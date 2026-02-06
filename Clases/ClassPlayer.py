@@ -12,6 +12,7 @@ class Player():
             self.move_player(current_time, bullet_group)
             self.animate()
             self.apply_gravity()
+            self.check_vulnerability(current_time)
             self.check_collisions(world)
             game_over = self.check_collisions_with_groups(ghost_group, lava_group, exit_group, game_over)
             self.update_position()
@@ -20,6 +21,7 @@ class Player():
             self.die()
 
         self.draw(screen)
+
         return game_over
 
 
@@ -74,6 +76,12 @@ class Player():
             self.vel_y = 10
         self.dy += self.vel_y 
     
+    def check_vulnerability(self, current_time):
+        #check for invulnerability
+            if self.invulnerable:
+                if current_time - self.last_hit_time >= self.hit_cooldown:
+                    self.invulnerable = False
+    
     def check_collisions(self, world):
         #check for collision
         self.in_air = True
@@ -95,16 +103,26 @@ class Player():
 
 
     def check_collisions_with_groups(self, ghost_group,lava_group, exit_group, game_over):
+        current_time = pygame.time.get_ticks()
         #check for collision with enemies
         if pygame.sprite.spritecollide(self, ghost_group, False):
-            self.lives -= 1
+            if not self.invulnerable:
+                self.lives -= 1
+                self.invulnerable = True
+                self.last_hit_time = current_time
+
+                if self.lives <= 0:
+                    game_over = -1
+
         #check for collision with lava
         if pygame.sprite.spritecollide(self, lava_group, False):
             game_over = -1
+            self.lives = 0
         
         #check for collision with exit
         if pygame.sprite.spritecollide(self, exit_group, False):
             game_over = 1
+            
         
         return game_over
 
@@ -124,8 +142,15 @@ class Player():
     
     def draw(self, screen): 
         #draw player onto screen
+        if self.invulnerable:
+            self.image.set_alpha(120)  # transparent
+        else:
+            self.image.set_alpha(255)  # normal
+
         screen.blit(self.image, self.rect)
         pygame.draw.rect(screen, (255,255,255), self.rect, 2)
+    
+    
 
     def reset(self,x,y):
         self.images_right = []
@@ -157,6 +182,10 @@ class Player():
         self.shoot_cooldown = 300 #miliseconds 
         self.last_shot_time = 0
 
+        #lives attributes
         self.lives = 3 
+        self.invulnerable = False
+        self.last_hit_time = 0
+        self.hit_cooldown = 1000 #1 sec = 1000ms
     
     

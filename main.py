@@ -3,7 +3,7 @@ from pygame.locals import *
 from Clases.ClassWorld import World
 from Clases.ClassPlayer import Player
 from Clases.ClassLava import Lava
-from Clases.ClassHUD import HUD
+
 #from Clases.ClassCoin import Coin
 from Clases.ClassButton import Button
 import json #para el manejo de los niveles
@@ -26,7 +26,9 @@ background_image = pygame.transform.smoothscale(background_image, (screen_width,
 restart_img = pygame.image.load('Recursos\\buttons\\restart_btn.png')
 start_img = pygame.image.load('Recursos\\buttons\\start_btn.png')
 exit_img = pygame.image.load('Recursos\\buttons\\exit_btn.png')
-
+lives_img = pygame.image.load('Recursos\\heart.png')
+lives_img = pygame.transform.scale(lives_img, (50,50))
+lives_rect = lives_img.get_rect()
 
 #define game variables
 tile_size = 50
@@ -73,7 +75,7 @@ run = True
 while run:
     clock.tick(fps)
     screen.blit(background_image, (0,0))
-    hud = HUD(screen)
+
 
     #events
     for event in pygame.event.get():
@@ -98,23 +100,27 @@ while run:
 
         #draws
         world.draw(screen)
-        hud.draw(player)
         ghost_group.draw(screen)
         lava_group.draw(screen)
         coin_group.draw(screen)
         exit_group.draw(screen)
         bullet_group.draw(screen)
 
-        for ghost in ghost_group:
-            pygame.draw.rect(screen, (255,255,255), ghost.rect, 2)
+        for i in range(player.lives):
+            screen.blit(lives_img, (10 + i * 60, 10))
 
-        # game_over: WIN
+        #dibujar vidas
+        for ghost in ghost_group:
+            pygame.draw.rect(screen, (255,255,255), ghost.rect, 2) 
+
+        #lose
         if game_over == -1:
             if restart_button.draw(screen):
                 world_data = []
                 world = reset_level(level)
                 game_over = 0
 
+        #win
         elif game_over == 1:
             level += 1
             if level <= max_levels:
